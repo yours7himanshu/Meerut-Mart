@@ -29,21 +29,23 @@ const Product = () => {
   return productData ? (
     <div className="border-t-2 pt-10 transition-opacity ease-in duration-500 opacity-100">
       {/* Product Data */}
-      <div className="flex flex-col lg:flex-row lg:gap-12 gap-8">
+      <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
         {/* Product Images */}
-        <div className="lg:flex-1 flex flex-col gap-4 lg:flex-row lg:gap-3">
-          <div className="flex flex-col items-center lg:items-start gap-2 lg:gap-4 overflow-x-auto lg:overflow-y-auto w-full lg:w-[18.7%]">
+        <div className="flex lg:flex-row flex-col lg:gap-4 items-center">
+          {/* Thumbnails in a column on the left for desktop, centered column for mobile */}
+          <div className="flex flex-row lg:flex-col gap-2 lg:gap-4 overflow-x-auto lg:overflow-y-auto items-center lg:items-start w-full lg:w-[18%]">
             {productData.image.map((item, index) => (
               <img
                 onClick={() => setImage(item)}
                 src={item}
                 key={index}
-                className="w-20 h-20 lg:w-24 lg:h-24 rounded-lg cursor-pointer border border-gray-300 hover:border-gray-500 transition"
+                className="w-16 h-16 lg:w-20 lg:h-20 rounded-lg cursor-pointer border border-gray-300 hover:border-gray-500 transition"
                 alt=""
               />
             ))}
           </div>
-          <div className="w-full lg:w-[80%]">
+          {/* Main Image */}
+          <div className="w-full lg:w-[80%] mt-4 lg:mt-0">
             <img src={image} className="w-full h-auto rounded-lg border border-gray-300" alt="" />
           </div>
         </div>
