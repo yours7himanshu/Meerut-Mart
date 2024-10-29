@@ -31,14 +31,14 @@ const Product = () => {
       {/* Product Data */}
       <div className="flex flex-col lg:flex-row lg:gap-12 gap-8">
         {/* Product Images */}
-        <div className="lg:flex-1 flex lg:flex-col flex-row-reverse lg:gap-3 gap-4">
-          <div className="flex lg:flex-col lg:overflow-y-auto overflow-x-scroll lg:justify-start justify-between lg:w-[18.7%] w-full">
+        <div className="lg:flex-1 flex flex-col gap-4 lg:flex-row lg:gap-3">
+          <div className="flex flex-col lg:flex-row overflow-x-auto lg:overflow-y-auto justify-between lg:justify-start w-full lg:w-[18.7%]">
             {productData.image.map((item, index) => (
               <img
                 onClick={() => setImage(item)}
                 src={item}
                 key={index}
-                className="w-1/5 lg:w-full cursor-pointer flex-shrink-0"
+                className="w-full lg:w-auto cursor-pointer mb-2 lg:mb-0"
                 alt=""
               />
             ))}
@@ -101,7 +101,7 @@ const Product = () => {
         </div>
         <div className="flex flex-col gap-4 border px-4 lg:px-6 py-4 lg:py-6 text-sm text-gray-500">
           <p>Dummy text comes here.</p>
-          <p>Again, the dummy text goes Here.</p>
+          <p>Again, the dummy text goes here.</p>
         </div>
       </div>
 
