@@ -197,7 +197,7 @@ const Collection = () => {
 
       {/* Right side */}
       <div className='flex-1'>
-        <div className='flex justify-between text-base sm:text-2xl mb-4'>
+        <div className='flex items-center justify-center text-base sm:text-2xl mb-4'>
           <Title text1={'ALL'} text2={'COLLECTIONS'} />
           {/* Product Sort */}
           <select onChange={(e)=> setSortType(e.target.value)} className='border-2 border-gray-300 h-8 text-xs px-2'>
