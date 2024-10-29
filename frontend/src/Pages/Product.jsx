@@ -32,19 +32,19 @@ const Product = () => {
       <div className="flex flex-col lg:flex-row lg:gap-12 gap-8">
         {/* Product Images */}
         <div className="lg:flex-1 flex flex-col gap-4 lg:flex-row lg:gap-3">
-          <div className="flex flex-col lg:flex-row overflow-x-auto lg:overflow-y-auto justify-between lg:justify-start w-full lg:w-[18.7%]">
+          <div className="flex flex-col items-center lg:items-start gap-2 lg:gap-4 overflow-x-auto lg:overflow-y-auto w-full lg:w-[18.7%]">
             {productData.image.map((item, index) => (
               <img
                 onClick={() => setImage(item)}
                 src={item}
                 key={index}
-                className="w-full lg:w-auto cursor-pointer mb-2 lg:mb-0"
+                className="w-20 h-20 lg:w-24 lg:h-24 rounded-lg cursor-pointer border border-gray-300 hover:border-gray-500 transition"
                 alt=""
               />
             ))}
           </div>
           <div className="w-full lg:w-[80%]">
-            <img src={image} className="w-full h-auto" alt="" />
+            <img src={image} className="w-full h-auto rounded-lg border border-gray-300" alt="" />
           </div>
         </div>
 
