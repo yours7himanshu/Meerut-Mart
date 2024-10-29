@@ -60,7 +60,7 @@ const Orders = () => {
       <div>
         {orderData.length > 0 ? (
           orderData.map((item, index) => (
-            <div key={index} className='py-4 border-t-[0.2px] border-b-[0.2px] border-gray-300 text-gray-900 flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
+            <div key={index} className='py-4 border-t-[0.2px] border-b-[0.2px] border-gray-300 text-gray-900 flex flex-col md:flex-row md:items-start md:justify-start gap-4'>
               <div className='flex items-start gap-6 text-sm'>
                 <img src={item.image[0]} className='w-16 sm:w-20' alt="" />
                 <div>
