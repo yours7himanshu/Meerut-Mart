@@ -26,23 +26,18 @@ connectCloudinary();
    
 
     // Middlewares
-  const allowedOrigins = ["https://meerut-mart-application.vercel.app/"]; 
-app.use(
-    cors({
-        origin: function (origin, callback) {
-            if (
-                !origin || 
-                allowedOrigins.includes(origin)  
-            ) {
-                callback(null, true); 
-            } else {
-                callback(new Error("Not allowed by CORS")); 
-            }
-        },
-        credentials: true, 
-        optionsSuccessStatus: 200 
-    })
-);
+const corsOptions = {
+    origin: 'https://meerut-mart-application.vercel.app', // Your Vercel frontend URL
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, // Allow credentials (like cookies) to be sent
+    optionsSuccessStatus: 204 // For older browsers
+};
+
+// Enable CORS for all routes
+app.use(cors(corsOptions));
+
+// You can also handle preflight requests globally
+app.options('*', cors(corsOptions));
 
 
 
