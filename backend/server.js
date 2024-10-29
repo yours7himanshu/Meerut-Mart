@@ -26,27 +26,25 @@ connectCloudinary();
    
 
     // Middlewares
-   const allowedOrigins = [
-    "https://meerut-mart-application.vercel.app/",
-    "http://localhost:5173"
-];
-
+  const allowedOrigins = ["https://meerut-mart-application.vercel.app/"]; 
 app.use(
     cors({
         origin: function (origin, callback) {
             if (
-                !origin ||
-                allowedOrigins.some((o) =>
-                    typeof o === "string" ? o === origin : o.test(origin)
-                )
+                !origin || 
+                allowedOrigins.includes(origin)  
             ) {
-                callback(null, true);
+                callback(null, true); 
             } else {
-                callback(new Error("Not allowed by CORS"));
+                callback(new Error("Not allowed by CORS")); 
             }
         },
+        credentials: true, 
+        optionsSuccessStatus: 200 
     })
 );
+
+
 
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
