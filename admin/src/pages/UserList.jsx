@@ -10,7 +10,7 @@ const UserList = ({ token }) => {
     const fetchUsers = async () => {
         try {
             const token = localStorage.getItem('token'); 
-            // console.log("Retrieved Token:", token); 
+        // console.log("Retrieved Token:", token); 
             const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
                 headers: {
                     authorization: `Bearer ${token}`,
