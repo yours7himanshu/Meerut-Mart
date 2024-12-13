@@ -14,8 +14,8 @@ const About = () => {
         <img src={assets.hero1} alt="" className='w-full md:max-w-[450px]'/>
         <div className='flex flex-col justify-center gap-6 md:w-2/4 text-gray-700'>
           <p>
-         <span className='font-bold'> Welcome to Meerut Mart! </span><br/> <br/>
-          At Meerut Mart, our mission is to bridge the gap between traditional craftsmanship and the digital marketplace. We specialize in showcasing and selling exquisite mitti ke diye (clay lamps) and mitti ke bartan (clay utensils) crafted by skilled artisans and small vendors who embody the rich heritage of traditional Indian pottery.
+         <span className='font-bold'> Welcome to meerutMart! </span><br/> <br/>
+          At Meeut Mart, our mission is to bridge the gap between traditional craftsmanship and the digital marketplace. We specialize in showcasing and selling exquisite mitti ke diye (clay lamps) and mitti ke bartan (clay utensils) crafted by skilled artisans and small vendors who embody the rich heritage of traditional Indian pottery.
           </p>
           <b className='text-gray-800'>What we do ?</b>
           <p>By partnering with small vendors and artisans, we offer a curated collection of beautiful, handcrafted clay products. Each item tells a unique story of tradition, skill, and dedication. Our goal is to create a seamless and user-friendly online shopping experience, allowing customers to explore and purchase authentic mitti ke diye and mitti ke bartan with ease.</p>
@@ -44,7 +44,7 @@ const About = () => {
         <Title text1={'Join Us'} text2={'On This Journey'}/>
       </div>
       <div className='flex flex-col justify-center gap-6 md:w-full text-gray-700'>
-          <p>Whether you're a vendor looking to expand your reach or a customer seeking beautiful, handcrafted products, Meerut Mart is here to make a difference. Explore our collection, support local artisans, and be a part of a movement that values tradition and innovation.<br/> <br/>
+          <p>Whether you're a vendor looking to expand your reach or a customer seeking beautiful, handcrafted products, FlipZone is here to make a difference. Explore our collection, support local artisans, and be a part of a movement that values tradition and innovation.<br/> <br/>
 
             Thank you for visiting Meerut Mart. Together, we can help preserve heritage, empower small businesses, and bring the beauty of traditional pottery into homes worldwide.
 
