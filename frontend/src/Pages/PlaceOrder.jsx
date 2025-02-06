@@ -47,36 +47,48 @@ const PlaceOrder = () => {
         address: formData,
         items: orderItems,
         amount: getCartAmount() + delivery_fee,
+        
       };
 
-      // Place the order
+ 
       const response = await axios.post(`${backendUrl}/api/order/place`, orderData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.data.success) {
-        // Clear cart items
+       
         setCartItems({});
 
-        // Send confirmation email only if the order is successful
+     
+        const orderDetails = {
+          ...orderData,
+          orderId: response.data.orderId || 'N/A',
+        };
+
+        
         try {
-          await axios.post(`${backendUrl}/send-email`, {
-            emails: formData.email,
-            message: `Dear Customer,
-            
-Thank you for choosing MeerutMart.com for your recent purchase! We truly appreciate your trust in us and hope you had a wonderful shopping experience.Your order has been successfully placed,and our team is working diligently to ensure a smooth and timely delivery.We would love to welcome you back, So please visit us again to explore more great products and deals tailored just for you.Thank you once again for shopping with MeerutMart.com - We look forward to serving you in the future!
+          await axios.post(
+            `${backendUrl}/send-email`,
+            {
+              emails: formData.email,
+              message: `Dear Customer,
+              
+Thank you for your purchase at MeerutMart.com. Your order (ID: ${orderDetails.orderId}) has been successfully placed. We appreciate your business and look forward to serving you again!
 
 Warm regards,
 The MeerutMart Team`,
-          }, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          navigate('/orders');
+            },
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
           toast.success('Order placed successfully! A confirmation email has been sent.');
         } catch (emailError) {
           console.error('Error sending email:', emailError);
-          toast.error('Order placed successfully, but failed to send confirmation email.'); // Adjust the message as necessary
+          toast.error('Order placed successfully, but failed to send confirmation email.');
         }
+
+        navigate('/reciept', { state: { order: orderDetails } });
       } else {
         toast.error(response.data.message);
       }
@@ -93,6 +105,7 @@ The MeerutMart Team`,
       }
     }
   };
+
 
   return (
     <form onSubmit={onSubmitHandler} className='flex flex-col sm:flex-row justify-between gap-4 pt-5 sm:pt-14 min-h-[80vh] border-t'>

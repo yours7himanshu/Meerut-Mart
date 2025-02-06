@@ -18,6 +18,7 @@ import Blog from './Pages/Blog'
 import SignUp from './Pages/SignUp'
 import SellerForm from './Components/Become a Seller/SellerForm'
 import SellItem from './Pages/SellItem'
+import TransactionReceipt from './Components/TransactionReciept'
 
 const App = () => {
   return (
@@ -39,6 +40,8 @@ const App = () => {
         <Route path='/signUp' element={<SignUp/>} />
         <Route path='/seller' element={<SellerForm/>} />
         <Route path='/sell-item' element={<SellItem/>} />
+        <Route path='/reciept' element={<TransactionReceipt/>} />
+
 
 
 
