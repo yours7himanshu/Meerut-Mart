@@ -27,7 +27,7 @@ connectCloudinary();
 
     // Middlewares
 const corsOptions = {
-    origin: ['https://meerut-mart-application.vercel.app','https://meerut-mart-admin.vercel.app','http://localhost:5174','http://localhost:5173'], 
+    origin: ['https://meerut-mart-application.vercel.app','https://meerut-mart-admin.vercel.app','http://localhost:5174','http://localhost:5173','https://meerut-mart.onrender.com'], 
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, // Allow credentials (like cookies) to be sent
     optionsSuccessStatus: 204 // For older browsers
