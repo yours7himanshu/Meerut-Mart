@@ -84,7 +84,5 @@ jobs:
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        # Deploy the artifact placed at the workspace root (contains the backend directory)
-        package: '.'
-        # Explicitly tell App Service how to start the app: move into backend folder and run npm start
-        startup-command: 'cd backend && npm start'
+        # Deploy the backend folder itself so server.js and package.json are at the web app root
+        package: './backend'
