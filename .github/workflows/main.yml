@@ -23,9 +23,9 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: meerutmart    # set this to your application's name
-  AZURE_WEBAPP_PACKAGE_PATH: 'backend/'      # set this to the path to your web app project, defaults to the repository root
-  NODE_VERSION: '20.x'                # set this to the node version to use
+  AZURE_WEBAPP_NAME: meerutmart
+  AZURE_WEBAPP_PACKAGE_PATH: 'backend/' # Confirmed this is your subdirectory
+  NODE_VERSION: '20.x'
 
 permissions:
   contents: read
@@ -41,19 +41,23 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
+        # IMPORTANT FIX: Specify the path to your lock file for caching
+        cache-dependency-path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}package-lock.json # Or yarn.lock if you're using Yarn
 
     - name: npm install, build, and test
       run: |
         npm install
         npm run build --if-present
         npm run test --if-present
-        working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+      working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} # Correctly applies to npm commands
 
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v4
       with:
         name: node-app
-        path: .
+        # Path to upload the *contents* of the 'backend/' folder.
+        # This will create an artifact named 'node-app' containing the files from 'backend/'.
+        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
   deploy:
     permissions:
@@ -76,4 +80,5 @@ jobs:
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        # Corrected: Deploy the downloaded artifact which is now at the root of the runner's directory
+        package: '.'
