@@ -1,88 +1,98 @@
 # This workflow will build and push a node.js application to an Azure Web App when a commit is pushed to your default branch.
 #
-# This workflow assumes you have already created the target Azure App Service web app.
-# For instructions see https://docs.microsoft.com/en-us/azure/app-service/quickstart-nodejs?tabs=linux&pivots=development-environment-cli
-#
 # To configure this workflow:
 #
-# 1. Download the Publish Profile for your Azure Web App. You can download this file from the Overview page of your Web App in the Azure Portal.
-#    For more information: https://docs.microsoft.com/en-us/azure/app-service/deploy-github-actions?tabs=applevel#generate-deployment-credentials
+# 1. Ensure you have enabled "SCM Basic Auth Publishing Credentials" temporarily in your Azure App Service's Configuration -> General settings
+#    to download the Publish Profile. Remember to restart the App Service after enabling.
+# 2. Download the Publish Profile for your Azure Web App from the Overview page of your Web App in the Azure Portal.
+# 3. Create a secret in your GitHub repository named AZURE_WEBAPP_PUBLISH_PROFILE and paste the entire publish profile contents as its value.
 #
-# 2. Create a secret in your repository named AZURE_WEBAPP_PUBLISH_PROFILE, paste the publish profile contents as the value of the secret.
-#    For instructions on obtaining the publish profile see: https://docs.microsoft.com/azure/app-service/deploy-github-actions#configure-the-github-secret
-#
-# 3. Change the value for the AZURE_WEBAPP_NAME. Optionally, change the AZURE_WEBAPP_PACKAGE_PATH and NODE_VERSION environment variables below.
-#
-# For more information on GitHub Actions for Azure: https://github.com/Azure/Actions
-# For more information on the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# For more samples to get started with GitHub Action workflows to deploy to Azure: https://github.com/Azure/actions-workflow-samples
+# Important: For your Node.js app to run correctly on Azure App Service:
+# - Ensure your backend/package.json has a "start" script, e.g., "start": "node server.js" or "start": "node --experimental-json-modules server.js"
+# - Ensure your Node.js app listens on process.env.PORT
+# - Set all necessary environment variables (like DB connection strings, API keys) in Azure App Service -> Configuration -> Application settings.
+
+name: Deploy MeerutMart Node.js Backend to Azure App Service
 
 on:
   push:
-    branches: [ "main" ]
-  workflow_dispatch:
+    branches:
+      - main # Workflow triggers on pushes to the 'main' branch. Adjust if your default branch is different (e.g., 'master').
+  workflow_dispatch: # Allows manual triggering from the GitHub Actions tab.
 
 env:
-  AZURE_WEBAPP_NAME: meerutmart
-  AZURE_WEBAPP_PACKAGE_PATH: 'backend/' # Confirmed this is your subdirectory
-  NODE_VERSION: '20.x'
+  AZURE_WEBAPP_NAME: meerutmart          # Your Azure App Service name
+  AZURE_WEBAPP_PACKAGE_PATH: 'backend/'  # Path to your Node.js backend project relative to the repository root.
+                                         # (e.g., if your package.json is in your_repo/backend/package.json)
+  NODE_VERSION: '20.x'                   # Specify the Node.js version to use in the build environment.
 
 permissions:
-  contents: read
+  contents: read # Provides read access to the repository content for the workflow.
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
+    runs-on: ubuntu-latest # The type of runner machine to use for the job.
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4 # Checks out your repository code into the runner.
+
+    - name: Set up Node.js Environment
+      uses: actions/setup-node@v4 # Configures the Node.js environment on the runner.
       with:
         node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-        # IMPORTANT FIX: Specify the path to your lock file for caching
-        cache-dependency-path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}package-lock.json # Or yarn.lock if you're using Yarn
+        cache: 'npm' # Enables caching of npm dependencies to speed up builds.
+        # Crucial for projects in subdirectories: tells where to find package-lock.json for caching.
+        cache-dependency-path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}package-lock.json 
 
-    - name: npm install, build, and test
+    - name: Install dependencies, Build (if present), and Test
       run: |
-        npm install
-        npm run build --if-present
-        npm run test --if-present
-      working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} # Correctly applies to npm commands
+        npm install             # Installs all Node.js dependencies (from package.json).
+        npm run build --if-present # Runs 'npm run build' if your package.json has such a script.
+                                   # This is common for TypeScript projects or frontend builds.
+                                   # If your backend doesn't have a build step, it will gracefully skip.
+        npm run test --if-present  # Runs 'npm run test' if your package.json has such a script.
+                                   # Highly recommended for Continuous Integration.
+      working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} # Executes npm commands within your backend project's folder.
 
-    - name: Upload artifact for deployment job
-      uses: actions/upload-artifact@v4
+    - name: Create Deployment Artifact (Zip)
+      # This step creates a zip file of your Node.js application's contents, excluding node_modules (which Azure will install)
+      # and .git files, making the deployment package clean and efficient.
+      run: |
+        zip -r deploy.zip . -x "*.git*" "node_modules/*" # Zips up everything except Git history and node_modules.
+      working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} # Ensure zipping happens from your backend directory.
+
+    - name: Upload Artifact for Deployment
+      uses: actions/upload-artifact@v4 # Uploads the created zip file as an artifact.
       with:
-        name: node-app
-        # Path to upload the *contents* of the 'backend/' folder.
-        # This will create an artifact named 'node-app' containing the files from 'backend/'.
-        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        name: node-app # Name of the artifact, used in the deploy job.
+        # The path here should point to the created zip file.
+        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}deploy.zip 
+        # Note: If 'deploy.zip' is created outside of AZURE_WEBAPP_PACKAGE_PATH, adjust this path.
+        # Given the working-directory above, it will be inside AZURE_WEBAPP_PACKAGE_PATH.
 
   deploy:
     permissions:
-      contents: none
-    runs-on: ubuntu-latest
-    needs: build
+      contents: none # The deploy job only needs to deploy, not read the repository content.
+    runs-on: ubuntu-latest # The runner machine for the deployment.
+    needs: build # Ensures this job runs only after the 'build' job completes successfully.
     environment:
-      name: 'Development'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+      name: 'Development' # Defines a GitHub deployment environment for tracking.
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }} # Links to the deployed app's URL in GitHub UI.
 
     steps:
-    - name: Download artifact from build job
-      uses: actions/download-artifact@v4
+    - name: Download Artifact from Build Job
+      uses: actions/download-artifact@v4 # Downloads the 'node-app' artifact.
       with:
-        name: node-app
-        # Extract the artifact contents (built from backend/) directly into
-        # the runner's workspace root so that server.js and package.json
-        # reside at the root of the zip deployed to Azure.
-        path: .
+        name: node-app # The name of the artifact to download.
 
     - name: 'Deploy to Azure WebApp'
-      id: deploy-to-webapp
-      uses: azure/webapps-deploy@v2
+      id: deploy-to-webapp # Gives this step an ID to output the webapp URL.
+      uses: azure/webapps-deploy@v2 # The GitHub Action for deploying to Azure App Service.
       with:
-        app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        # Deploy the backend folder itself so server.js and package.json are at the web app root
-        package: './backend'
+        app-name: ${{ env.AZURE_WEBAPP_NAME }} # Uses the App Service name from environment variables.
+        slot-name: 'production' # Default slot for Free tier App Services.
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }} # Uses the GitHub Secret for authentication.
+        # The 'package' path should point to the root of the downloaded artifact.
+        # Since 'deploy.zip' was downloaded and extracted, the contents are now in the current directory.
+        package: './deploy.zip' # Explicitly reference the zip file downloaded by actions/download-artifact
