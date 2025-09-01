@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 const SellerForm = () => {
     const backendURL = import.meta.env.VITE_BACKEND_URL;
     const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
         contactNumber: '', 
         shopLocation: '',
@@ -25,12 +26,14 @@ const SellerForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
     
         const token = localStorage.getItem('token');
         console.log('Token before sending request:', token);
         if (!token) {
             toast.error("Authentication token is missing");
             console.log("Token is missing");
+            setIsLoading(false);
             return; 
         }
     
@@ -50,94 +53,109 @@ const SellerForm = () => {
         } catch (error) {
             console.error('Error creating seller:', error.response ? error.response.data : error.message);
             toast.error("Failed to create seller. Please try again.");
+        } finally {
+            setIsLoading(false);
         }
     };
     
     return (
-        <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md mt-10">
-            <h2 className="text-2xl font-semibold text-center mb-4">Become a Seller</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label htmlFor="shopLocation" className="block text-sm font-medium text-gray-700">Shop Location:</label>
-                    <input
-                        type="text"
-                        id="shopLocation"
-                        name="shopLocation"
-                        value={formData.shopLocation}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:outline-none p-2"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="addharCard" className="block text-sm font-medium text-gray-700">Addhar Card:</label>
-                    <input
-                        type="number"
-                        id="addharCard"
-                        name="addharCard"
-                        value={formData.addharCard}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:outline-none p-2"
-                    />
-                </div>
+        <div className="min-h-screen flex items-center justify-center w-full">
+            <div className="bg-gray-100 shadow-black shadow-2xl rounded-lg px-8 py-6 max-w-md w-full mx-4">
+                <h1 className="text-2xl font-bold mb-6 text-center">Become a Seller</h1>
+                <form onSubmit={handleSubmit}>
+                    <div className="mb-3 min-w-72">
+                        <p className="text-sm font-semibold text-gray-700 mb-2">Shop Location</p>
+                        <input
+                            type="text"
+                            id="shopLocation"
+                            name="shopLocation"
+                            value={formData.shopLocation}
+                            onChange={handleChange}
+                            required
+                            className="rounded-md w-full px-3 py-2 border border-gray-400 outline-none"
+                            placeholder="Enter your shop location"
+                        />
+                    </div>
+                    
+                    <div className="mb-3 min-w-72">
+                        <p className="text-sm font-semibold text-gray-700 mb-2">Aadhar Card Number</p>
+                        <input
+                            type="text"
+                            id="addharCard"
+                            name="addharCard"
+                            value={formData.addharCard}
+                            onChange={handleChange}
+                            required
+                            className="rounded-md w-full px-3 py-2 border border-gray-400 outline-none"
+                            placeholder="Enter 12-digit Aadhar number"
+                        />
+                    </div>
 
-                <div>
-                    <label htmlFor="panCard" className="block text-sm font-medium text-gray-700">Pan Card:</label>
-                    <input
-                        type="text"
-                        id="panCard"
-                        name="panCard"
-                        value={formData.panCard}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:outline-none p-2"
-                    />
-                </div>
+                    <div className="mb-3 min-w-72">
+                        <p className="text-sm font-semibold text-gray-700 mb-2">PAN Card Number</p>
+                        <input
+                            type="text"
+                            id="panCard"
+                            name="panCard"
+                            value={formData.panCard}
+                            onChange={handleChange}
+                            required
+                            className="rounded-md w-full px-3 py-2 border border-gray-400 outline-none"
+                            placeholder="Enter PAN number"
+                        />
+                    </div>
 
-                <div>
-                    <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700">Contact Number:</label>
-                    <input
-                        type="text"
-                        id="contactNumber"
-                        name="contactNumber"
-                        value={formData.contactNumber}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:outline-none p-2"
-                    />
-                </div>
+                    <div className="mb-3 min-w-72">
+                        <p className="text-sm font-semibold text-gray-700 mb-2">Contact Number</p>
+                        <input
+                            type="tel"
+                            id="contactNumber"
+                            name="contactNumber"
+                            value={formData.contactNumber}
+                            onChange={handleChange}
+                            required
+                            className="rounded-md w-full px-3 py-2 border border-gray-400 outline-none"
+                            placeholder="Enter your contact number"
+                        />
+                    </div>
 
-                <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email:</label>
-                    <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:outline-none p-2"
-                    />
-                </div>
+                    <div className="mb-3 min-w-72">
+                        <p className="text-sm font-semibold text-gray-700 mb-2">Email Address</p>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
+                            className="rounded-md w-full px-3 py-2 border border-gray-400 outline-none"
+                            placeholder="your@email.com"
+                        />
+                    </div>
 
-                <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password:</label>
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:outline-none p-2"
-                    />
-                </div>
+                    <div className="mb-3 min-w-72">
+                        <p className="text-sm font-semibold text-gray-700 mb-2">Password</p>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            required
+                            className="rounded-md w-full px-3 py-2 border border-gray-400 outline-none"
+                            placeholder="Enter your password"
+                        />
+                    </div>
 
-                <button type="submit" className="w-full bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded">
-                    Submit
-                </button>
-            </form>
+                    <button 
+                        type="submit"
+                        className="mt-2 w-full py-2 px-4 rounded-md text-white bg-black hover:bg-gray-950 hover:font-semibold disabled:bg-gray-500 disabled:cursor-not-allowed"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? 'Submitting...' : 'Submit Application'}
+                    </button>
+                </form>
+            </div>
         </div>
     );
 };
