@@ -8,11 +8,13 @@ const SignUp = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { backendUrl } = useContext(ShopContext);
   const navigate = useNavigate(); // Initialize useNavigate
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const response = await axios.post(`${backendUrl}/api/user/register`, { name, email, password });
       if (response.data.success) {
@@ -25,6 +27,8 @@ const SignUp = () => {
     } catch (error) {
       console.log(error);
       toast.error(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -66,8 +70,12 @@ const SignUp = () => {
               required 
             />
           </div>
-          <button className='mt-2 w-full py-2 px-4 rounded-md text-white bg-black hover:bg-gray-950 hover:font-semibold' type='submit'>
-            Sign Up
+          <button 
+            className='mt-2 w-full py-2 px-4 rounded-md text-white bg-black hover:bg-gray-950 hover:font-semibold disabled:bg-gray-500 disabled:cursor-not-allowed' 
+            type='submit'
+            disabled={isLoading}
+          >
+            {isLoading ? 'Signing up...' : 'Sign Up'}
           </button>
           <p className='text-sm mt-4 text-center'>
             Already have an account? 

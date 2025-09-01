@@ -3,6 +3,7 @@ import {assets} from '../assets/frontend_assets/assets'
 import { Link, NavLink } from 'react-router-dom'
 import { ShopContext } from '../context/ShopContext';
 import { toast } from 'react-toastify';
+import { ShieldCheck } from 'lucide-react';
 
 const Navbar = () => {
     const [visible,setVisible]=useState(false);
@@ -58,7 +59,6 @@ const Navbar = () => {
         
         <img src={assets.search_icon} onClick={()=> setShowSearch(true)} className='w-5 cursor-pointer' alt="" />
         
-      
         <div className='group relative' >
             <img onClick={()=> token ? null : navigate('/login')} src={assets.profile_icon} className='w-5 cursor-pointer' alt="" />
         {token &&
@@ -82,6 +82,11 @@ const Navbar = () => {
         <img src={assets.cart_icon} className='w-5 min-w-5' alt="" />
         <p className='absolute right-[-5px] bottom-[-5px] w-4 text-center leading-4 bg-black text-white aspect-square rounded-full text-[8px]' >{getCartCount()}</p>
     </Link>
+
+        {/* Admin Button */}
+        <a href="https://meerut-mart-admin.vercel.app/" target="_blank" rel="noopener noreferrer" className='cursor-pointer'>
+          <ShieldCheck className="w-6 h-6 text-gray-700 hover:text-black transition-colors" />
+        </a>
        
         
         {/* for mobile screen */}
@@ -100,6 +105,10 @@ const Navbar = () => {
                 <NavLink onClick={()=> setVisible(false)} className='py-2 pl-6 border' to='/about' >ABOUT</NavLink>
                 <NavLink onClick={()=> setVisible(false)} className='py-2 pl-6 border' to='/contact' >CONTACT</NavLink>
                 <NavLink onClick={()=> setVisible(false)} className='py-2 pl-6 border' to='/seller' >BECOME SELLER</NavLink>
+                <a href="https://meerut-mart-admin.vercel.app/" target="_blank" rel="noopener noreferrer" onClick={()=> setVisible(false)} className='py-2 pl-6 border flex items-center gap-3'>
+                  <ShieldCheck className="w-4 h-4 text-gray-700" />
+                  ADMIN
+                </a>
             </div>
         </div>
 

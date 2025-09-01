@@ -7,10 +7,12 @@ import {jwtDecode} from 'jwt-decode'; // Use default import for jwt-decode
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { token, setToken, navigate, backendUrl } = useContext(ShopContext);
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const response = await axios.post(`${backendUrl}/api/user/login`, { email, password });
 
@@ -49,6 +51,8 @@ const Login = () => {
     } catch (error) {
       console.error("Login Error:", error); // Log error for debugging
       toast.error('An error occurred. Please try again.'); // User-friendly error message
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -85,8 +89,12 @@ const Login = () => {
               required 
             />
           </div>
-          <button className='mt-2 w-full py-2 px-4 rounded-md text-white bg-black hover:bg-gray-950 hover:font-semibold' type='submit'>
-            Login
+          <button 
+            className='mt-2 w-full py-2 px-4 rounded-md text-white bg-black hover:bg-gray-950 hover:font-semibold disabled:bg-gray-500 disabled:cursor-not-allowed' 
+            type='submit'
+            disabled={isLoading}
+          >
+            {isLoading ? 'Logging...' : 'Login'}
           </button>
           <p className='text-sm mt-4 text-center'>
             Do not have an account? 
