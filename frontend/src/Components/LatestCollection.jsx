@@ -7,10 +7,15 @@ const LatestCollection = () => {
 
     const {products}=useContext(ShopContext);
     const [latestProducts,setLatestProducts]=useState([]);
+    const [visibleCount, setVisibleCount] = useState(16);
 
     useEffect(()=>{
-        setLatestProducts(products.slice(0,16));
-    },[products]);
+        setLatestProducts(products.slice(0,visibleCount));
+    },[products, visibleCount]);
+
+    const handleShowMore = () => {
+        setVisibleCount(prevCount => prevCount + 16);
+    };
 
   return (
     <div className='my-10' >
@@ -28,6 +33,18 @@ const LatestCollection = () => {
                 ))
             }
         </div>
+
+        {/* Show More Button */}
+        {visibleCount < products.length && (
+            <div className='text-center mt-10'>
+                <button 
+                    onClick={handleShowMore}
+                    className='bg-gray-800 text-white px-8 py-3 rounded-md hover:bg-gray-700 transition-all duration-300'
+                >
+                    Show More
+                </button>
+            </div>
+        )}
 
 
     </div>
