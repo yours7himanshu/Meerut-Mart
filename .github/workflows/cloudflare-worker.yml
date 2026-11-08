@@ -3,6 +3,7 @@ name: Test & Deploy Meerut-Mart Backend Worker to Cloudflare
 on:
   push:
     branches:
+      - main
       - cloudflare-migration
   workflow_dispatch:
 
@@ -39,7 +40,7 @@ jobs:
     needs: test-backend-worker
     runs-on: ubuntu-latest
     name: Deploy Backend Worker to Cloudflare
-    if: github.ref == 'refs/heads/cloudflare-migration' && github.repository_owner == 'dinkarkapoor220'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/cloudflare-migration'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
