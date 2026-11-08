@@ -4,10 +4,14 @@ import userModel from "../models/userModel.js";
 // Add products to user cart
 const addToCart = async (req, res) => {
     try {
-        const { itemId, size } = req.body; // Removed userId from here
-        const userId = req.userId; // Use userId from the token
+        const { itemId, size } = req.body;
+        const userId = req.userId || req.body?.userId || req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "User not authenticated" });
+        }
+
         const userData = await userModel.findById(userId);
-        let cartData = userData.cartData || {}; // Make sure to handle cases where cartData is undefined
+        let cartData = (userData && userData.cartData) ? userData.cartData : {};
 
         if (cartData[itemId]) {
             if (cartData[itemId][size]) {
@@ -32,10 +36,14 @@ const addToCart = async (req, res) => {
 // Update cart
 const updateCart = async (req, res) => {
     try {
-        const { itemId, size, quantity } = req.body; // Removed userId from here
-        const userId = req.userId; // Use userId from the token
+        const { itemId, size, quantity } = req.body;
+        const userId = req.userId || req.body?.userId || req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "User not authenticated" });
+        }
+
         const userData = await userModel.findById(userId);
-        let cartData = userData.cartData || {}; // Make sure to handle cases where cartData is undefined
+        let cartData = (userData && userData.cartData) ? userData.cartData : {};
 
         if (cartData[itemId] && cartData[itemId][size]) {
             cartData[itemId][size] = quantity;
@@ -55,9 +63,13 @@ const updateCart = async (req, res) => {
 // Get user cart
 const getUserCart = async (req, res) => {
     try {
-        const userId = req.userId; // Use userId from the token
+        const userId = req.userId || req.body?.userId || req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "User not authenticated" });
+        }
+
         const userData = await userModel.findById(userId);
-        let cartData = userData.cartData || {}; // Make sure to handle cases where cartData is undefined
+        const cartData = (userData && userData.cartData) ? userData.cartData : {};
         res.json({ success: true, cartData });
 
     } catch (error) {

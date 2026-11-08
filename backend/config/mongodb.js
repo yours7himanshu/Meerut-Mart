@@ -3,31 +3,29 @@ import mongoose from "mongoose";
 let isConnecting = false;
 
 /**
- * Serverless-compatible MongoDB connection manager.
- * Supports connection reuse in warm Cloudflare Workers isolates and standard Node.js daemon.
+ * Cleanly disconnects and resets Mongoose connections.
+ * In Cloudflare Workers, this is essential to prevent TCP sockets from
+ * outliving the HTTP request that created them.
+ */
+export const disconnectDB = async () => {
+  if (mongoose.connection && mongoose.connection.readyState !== 0) {
+    try {
+      await mongoose.disconnect();
+    } catch (_) {}
+  }
+};
+
+/**
+ * Serverless request-scoped MongoDB connection manager.
+ * In Cloudflare Workers, TCP sockets cannot be shared across requests.
+ * We must connect fresh inside each request's I/O context and disconnect
+ * when the request finishes.
  *
  * @param {Object} [options]
  * @param {Object} [options.env] - Cloudflare Worker environment bindings
  * @returns {Promise<typeof mongoose>}
  */
-const connectDB = async (options = {}) => {
-  // 1. Warm-isolate reuse: Return immediately if already connected
-  if (mongoose.connection && mongoose.connection.readyState === 1) {
-    return mongoose;
-  }
-
-  // If a connection attempt is in progress, wait for it
-  if (isConnecting) {
-    let retries = 0;
-    while (isConnecting && retries < 20) {
-      await new Promise((r) => setTimeout(r, 100));
-      if (mongoose.connection && mongoose.connection.readyState === 1) {
-        return mongoose;
-      }
-      retries++;
-    }
-  }
-
+export const connectDB = async (options = {}) => {
   const env = options.env || (typeof process !== "undefined" ? process.env : {});
   const rawUri = env.MONGODB_URI;
 
@@ -46,13 +44,21 @@ const connectDB = async (options = {}) => {
     }
   }
 
+  // If already connected from a prior request context, drop stale sockets
+  if (mongoose.connection && mongoose.connection.readyState !== 0) {
+    try {
+      await mongoose.disconnect();
+    } catch (_) {}
+  }
+
   try {
     isConnecting = true;
     await mongoose.connect(finalUri, {
       bufferCommands: false,
-      maxPoolSize: 5,
+      maxPoolSize: 1, // Single connection per request context to prevent socket exhaustion
       serverSelectionTimeoutMS: 5000,
       connectTimeoutMS: 10000,
+      family: 4, // Force IPv4 for reliable Atlas resolution in edge runtimes
     });
     isConnecting = false;
     return mongoose;

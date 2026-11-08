@@ -5,7 +5,7 @@
 
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import connectDB from "./config/mongodb.js";
+import connectDB, { disconnectDB } from "./config/mongodb.js";
 
 // Controllers
 import {
@@ -89,7 +89,7 @@ app.use(
 );
 
 // =============================================================================
-// Express-to-Hono Handler Adapter
+// Express-to-Hono Handler Adapter with Request-Scoped DB Discipline
 // =============================================================================
 export function toHonoHandler(...middlewares) {
   return async (c) => {
@@ -102,21 +102,11 @@ export function toHonoHandler(...middlewares) {
       }
     }
 
-    // 2. Ensure serverless MongoDB connection
-    const mongoUri = (c.env && c.env.MONGODB_URI) || (typeof process !== "undefined" && process.env.MONGODB_URI);
-    if (mongoUri) {
-      try {
-        await connectDB({ env: c.env });
-      } catch (dbErr) {
-        console.error("Worker DB connect error:", dbErr.message);
-        return c.json(
-          { success: false, message: "Database connection failed", error: dbErr.message },
-          500
-        );
-      }
-    }
+    const mongoUri =
+      (c.env && c.env.MONGODB_URI) ||
+      (typeof process !== "undefined" && process.env.MONGODB_URI);
 
-    // 3. Parse Request Body & Multipart Files
+    // 2. Parse Request Body & Multipart Files
     const contentType = c.req.header("content-type") || "";
     let parsedBody = {};
     const parsedFiles = {};
@@ -139,14 +129,12 @@ export function toHonoHandler(...middlewares) {
             typeof val === "object" &&
             typeof val.arrayBuffer === "function"
           ) {
-            const arrayBuf = await val.arrayBuffer();
-            const buf = Buffer.from(arrayBuf);
+            const buffer = Buffer.from(await val.arrayBuffer());
             const fileObj = {
-              fieldname: key,
+              buffer,
               originalname: val.name || "upload.jpg",
               mimetype: val.type || "image/jpeg",
-              buffer: buf,
-              size: buf.length,
+              size: buffer.length,
             };
             if (!parsedFiles[key]) parsedFiles[key] = [];
             parsedFiles[key].push(fileObj);
@@ -155,26 +143,25 @@ export function toHonoHandler(...middlewares) {
           }
         }
       } catch (err) {
-        console.error("Worker body parse error:", err.message);
+        console.error("FormData parse error:", err);
       }
     }
 
-    // 4. Construct Express-compatible req and res objects
-    const clientIp =
-      c.req.header("cf-connecting-ip") ||
-      c.req.header("x-forwarded-for") ||
-      "127.0.0.1";
+    // 3. Build Mock Express Request & Response Objects
+    const headers = {};
+    for (const [k, v] of c.req.raw.headers.entries()) {
+      headers[k.toLowerCase()] = v;
+    }
 
     const req = {
-      method: c.req.method,
-      url: c.req.url,
-      path: c.req.path,
-      headers: Object.fromEntries(c.req.raw.headers.entries()),
-      query: c.req.query(),
-      params: c.req.param(),
       body: parsedBody,
       files: parsedFiles,
-      ip: clientIp,
+      file: Object.values(parsedFiles)[0]?.[0] || null,
+      headers,
+      query: c.req.query(),
+      params: c.req.param(),
+      path: c.req.path,
+      method: c.req.method,
       user: c.get("user") || null,
       env: c.env || process.env,
     };
@@ -216,8 +203,13 @@ export function toHonoHandler(...middlewares) {
       },
     };
 
-    // 5. Execute middleware and controller chain sequentially
+    // 4. Request-scoped DB connection: connect fresh and disconnect in finally
     try {
+      if (mongoUri) {
+        await connectDB({ env: c.env });
+      }
+
+      // 5. Execute middleware and controller chain sequentially
       for (const mw of middlewares) {
         if (ended) break;
         let nextCalled = false;
@@ -248,6 +240,11 @@ export function toHonoHandler(...middlewares) {
         { success: false, message: chainErr.message || "Internal server error" },
         500
       );
+    } finally {
+      // Disconnect immediately so TCP sockets never leak to the next request
+      if (mongoUri) {
+        await disconnectDB();
+      }
     }
 
     return new Response(responseData, {
@@ -281,14 +278,18 @@ app.post("/api/product/single", toHonoHandler(singleProduct));
 
 // Display Product Route (/api/displayproduct)
 app.get("/api/displayproduct", async (c) => {
-  const mongoUri = (c.env && c.env.MONGODB_URI) || (typeof process !== "undefined" && process.env.MONGODB_URI);
-  if (mongoUri) await connectDB({ env: c.env });
+  const mongoUri =
+    (c.env && c.env.MONGODB_URI) ||
+    (typeof process !== "undefined" && process.env.MONGODB_URI);
   try {
+    if (mongoUri) await connectDB({ env: c.env });
     const products = await SellProduct.find({});
     return c.json(products, 200);
   } catch (error) {
     console.error("Display product error:", error);
     return c.json({ message: "Server error", error: error.message }, 500);
+  } finally {
+    if (mongoUri) await disconnectDB();
   }
 });
 
@@ -312,10 +313,12 @@ app.post("/api/add-item-website/:id", toHonoHandler(addItemToWebsite));
 
 // Review Routes (/api/product/:id/reviews)
 app.post("/api/product/:id/reviews", async (c) => {
-  const mongoUri = (c.env && c.env.MONGODB_URI) || (typeof process !== "undefined" && process.env.MONGODB_URI);
-  if (mongoUri) await connectDB({ env: c.env });
+  const mongoUri =
+    (c.env && c.env.MONGODB_URI) ||
+    (typeof process !== "undefined" && process.env.MONGODB_URI);
   const productId = c.req.param("id");
   try {
+    if (mongoUri) await connectDB({ env: c.env });
     const body = await c.req.json();
     const { userName, rating, reviewText } = body;
     const newReview = new Review({ productId, userName, rating, reviewText });
@@ -323,18 +326,24 @@ app.post("/api/product/:id/reviews", async (c) => {
     return c.json({ message: "Review saved successfully!" }, 201);
   } catch (error) {
     return c.json({ error: "Error saving review", message: error.message }, 400);
+  } finally {
+    if (mongoUri) await disconnectDB();
   }
 });
 
 app.get("/api/product/:id/reviews", async (c) => {
-  const mongoUri = (c.env && c.env.MONGODB_URI) || (typeof process !== "undefined" && process.env.MONGODB_URI);
-  if (mongoUri) await connectDB({ env: c.env });
+  const mongoUri =
+    (c.env && c.env.MONGODB_URI) ||
+    (typeof process !== "undefined" && process.env.MONGODB_URI);
   const productId = c.req.param("id");
   try {
+    if (mongoUri) await connectDB({ env: c.env });
     const reviews = await Review.find({ productId });
     return c.json(reviews, 200);
   } catch (error) {
     return c.json({ error: "Error fetching reviews", message: error.message }, 400);
+  } finally {
+    if (mongoUri) await disconnectDB();
   }
 });
 
