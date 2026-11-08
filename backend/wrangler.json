@@ -1,0 +1,11 @@
+{
+  "name": "meerut-mart-backend",
+  "main": "worker.js",
+  "compatibility_date": "2024-09-23",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "vars": {
+    "NODE_ENV": "production"
+  }
+}
