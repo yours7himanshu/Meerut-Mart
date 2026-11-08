@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
         match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     },
     password: { type: String, required: true },
-   
+    cartData: { type: Object, default: {} },
     role: { type: String, default: 'user' }
 }, { minimize: false });
 
