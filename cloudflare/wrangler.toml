@@ -1,0 +1,6 @@
+name = "meerut-mart-api-gateway"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+
+[vars]
+BACKEND_ORIGIN = "https://meerut-mart.onrender.com"

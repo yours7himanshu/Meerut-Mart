@@ -26,11 +26,25 @@ connectCloudinary();
    
 
     // Middlewares
+const allowedOrigins = [
+    'https://meerut-mart-application.vercel.app',
+    'https://meerut-mart-admin.vercel.app',
+    'http://localhost:5174',
+    'http://localhost:5173',
+    'https://meerut-mart.onrender.com'
+];
+
 const corsOptions = {
-    origin: ['https://meerut-mart-application.vercel.app','https://meerut-mart-admin.vercel.app','http://localhost:5174','http://localhost:5173','https://meerut-mart.onrender.com'], 
+    origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin) || origin.endsWith('.pages.dev')) {
+            return callback(null, true);
+        }
+        return callback(null, true);
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true, // Allow credentials (like cookies) to be sent
-    optionsSuccessStatus: 204 // For older browsers
+    credentials: true,
+    optionsSuccessStatus: 204
 };
 
 // Enable CORS for all routes
