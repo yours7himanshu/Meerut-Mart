@@ -16,9 +16,11 @@ const SellItem = ({ token }) => {
   const [subCategory, setSubCategory] = useState('Topwear');
   const [bestseller, setBestseller] = useState(false);
   const [sizes, setSizes] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       const formData = new FormData();
       formData.append('name', name);
@@ -48,6 +50,8 @@ const SellItem = ({ token }) => {
       }
     } catch (error) {
       toast.error(error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -130,7 +134,23 @@ const SellItem = ({ token }) => {
             </div>
           </div>
         
-          <button type="submit" className="w-full py-3 bg-black text-white font-semibold rounded-lg">ADD PRODUCT</button>
+          <button 
+            type="submit" 
+            disabled={isSubmitting}
+            className="w-full py-3 bg-black text-white font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-gray-900 disabled:bg-gray-500 disabled:cursor-not-allowed transition"
+          >
+            {isSubmitting ? (
+              <>
+                <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+                <span>Uploading Product...</span>
+              </>
+            ) : (
+              'ADD PRODUCT'
+            )}
+          </button>
         </form>
       </div>
     </div>

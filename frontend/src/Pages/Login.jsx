@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import { ShopContext } from '../context/ShopContext';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import {jwtDecode} from 'jwt-decode'; // Use default import for jwt-decode
+import { jwtDecode } from 'jwt-decode';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -18,39 +18,36 @@ const Login = () => {
 
       if (response.data.success) {
         const userToken = response.data.token;
-        setToken(userToken); // Set the token in the context
-        localStorage.setItem('token', userToken); // Store token in localStorage
-        toast.success('Login successful'); // Display success message
+        setToken(userToken);
+        localStorage.setItem('token', userToken);
+        toast.success('Login successful');
 
-        // Decode the token to get user details
         const decoded = jwtDecode(userToken);
-        console.log("Decoded Token:", decoded); // Log decoded token
+        console.log("Decoded Token:", decoded);
 
-        // Store user name in local storage
         if (decoded.name) {
-          localStorage.setItem('name', decoded.name); // Store name in local storage
-          console.log("User name stored in localStorage:", decoded.name); // Log for debugging
+          localStorage.setItem('name', decoded.name);
+          console.log("User name stored in localStorage:", decoded.name);
         } else {
           console.error("User name not found in the decoded token.");
         }
 
-        const userRole = decoded.role; // Get user role from the token
+        const userRole = decoded.role;
         console.log("User Role:", userRole);
 
-        // Redirect based on the user's role
         if (userRole === 'user') {
-          navigate('/'); // Redirect to home for users
+          navigate('/');
         } else if (userRole === 'seller') {
-          navigate('/sell-item'); // Redirect to the seller page
+          navigate('/sell-item');
         } else {
-          toast.error('Role not recognized.'); // Handle unexpected role
+          toast.error('Role not recognized.');
         }
       } else {
-        toast.error(response.data.message); // Display error message from the server
+        toast.error(response.data.message);
       }
     } catch (error) {
-      console.error("Login Error:", error); // Log error for debugging
-      toast.error('An error occurred. Please try again.'); // User-friendly error message
+      console.error("Login Error:", error);
+      toast.error('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -58,13 +55,13 @@ const Login = () => {
 
   useEffect(() => {
     if (token) {
-      navigate('/'); // Navigate if token is already present
+      navigate('/');
     }
   }, [token, navigate]);
 
   return (
     <div className='min-h-screen flex items-center justify-center w-full'>
-      <div className='bg-gray-100 shadow-black shadow-2xl rounded-lg px-8 py-6 max-w-md'>
+      <div className='bg-gray-100 shadow-black shadow-2xl rounded-lg px-8 py-6 max-w-md w-full mx-4'>
         <h1 className='text-2xl font-bold mb-4'>Login</h1>
         <form onSubmit={onSubmitHandler}>
           <div className='mb-3 min-w-72'>
@@ -90,11 +87,21 @@ const Login = () => {
             />
           </div>
           <button 
-            className='mt-2 w-full py-2 px-4 rounded-md text-white bg-black hover:bg-gray-950 hover:font-semibold disabled:bg-gray-500 disabled:cursor-not-allowed' 
+            className='mt-2 w-full py-2.5 px-4 rounded-md text-white bg-black hover:bg-gray-950 hover:font-semibold disabled:bg-gray-500 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition' 
             type='submit'
             disabled={isLoading}
           >
-            {isLoading ? 'Logging...' : 'Login'}
+            {isLoading ? (
+              <>
+                <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+                <span>Logging in...</span>
+              </>
+            ) : (
+              'Login'
+            )}
           </button>
           <p className='text-sm mt-4 text-center'>
             Do not have an account? 
@@ -107,4 +114,3 @@ const Login = () => {
 };
 
 export default Login;
-

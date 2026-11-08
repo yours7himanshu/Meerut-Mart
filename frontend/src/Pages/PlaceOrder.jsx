@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 
 const PlaceOrder = () => {
   const [method, setMethod] = useState("cod");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { navigate, backendUrl, token, cartItems, setCartItems, getCartAmount, delivery_fee, products } = useContext(ShopContext);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -28,6 +29,7 @@ const PlaceOrder = () => {
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       let orderItems = [];
       for (const itemId in cartItems) {
@@ -47,25 +49,20 @@ const PlaceOrder = () => {
         address: formData,
         items: orderItems,
         amount: getCartAmount() + delivery_fee,
-        
       };
 
- 
       const response = await axios.post(`${backendUrl}/api/order/place`, orderData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.data.success) {
-       
         setCartItems({});
 
-     
         const orderDetails = {
           ...orderData,
           orderId: response.data.orderId || 'N/A',
         };
 
-        
         try {
           await axios.post(
             `${backendUrl}/send-email`,
@@ -103,9 +100,10 @@ The MeerutMart Team`,
         console.error('Error:', error.message);
         toast.error('An error occurred while placing the order.');
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
-
 
   return (
     <form onSubmit={onSubmitHandler} className='flex flex-col sm:flex-row justify-between gap-4 pt-5 sm:pt-14 min-h-[80vh] border-t'>
@@ -155,7 +153,23 @@ The MeerutMart Team`,
           </div>
 
           <div className='w-full text-end mt-8'>
-            <button type='submit' className='bg-black text-white px-16 py-3 text-sm rounded-md mr-40'>Place Order</button>
+            <button 
+              type='submit' 
+              disabled={isSubmitting}
+              className='bg-black text-white px-16 py-3 text-sm rounded-md mr-40 inline-flex items-center justify-center gap-2 hover:bg-gray-900 disabled:bg-gray-500 disabled:cursor-not-allowed transition'
+            >
+              {isSubmitting ? (
+                <>
+                  <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  </svg>
+                  <span>Placing Order...</span>
+                </>
+              ) : (
+                'Place Order'
+              )}
+            </button>
           </div>
         </div>
       </div>
@@ -164,4 +178,3 @@ The MeerutMart Team`,
 };
 
 export default PlaceOrder;
-

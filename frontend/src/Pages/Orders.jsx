@@ -6,20 +6,27 @@ import axios from 'axios';
 const Orders = () => {
   const { currency, backendUrl, token } = useContext(ShopContext);
   const [orderData, setOrderData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [trackingIdx, setTrackingIdx] = useState(null);
 
-  const loadOrderData = async () => {
+  const loadOrderData = async (trackIndex = null) => {
     try {
       if (!token) {
-        return null; // If no token is available, don't make the request
+        return null;
+      }
+
+      if (trackIndex !== null) {
+        setTrackingIdx(trackIndex);
+      } else {
+        setLoading(true);
       }
       
       const response = await axios.post(
         backendUrl + '/api/order/userorders',
         {},
-        // Empty body
         {
           headers: {
-            authorization: `Bearer ${token}` // Pass the token correctly
+            authorization: `Bearer ${token}`
           }
         }
       );
@@ -38,13 +45,16 @@ const Orders = () => {
           });
         });
         console.log(allOrdersItem);
-        setOrderData(allOrdersItem.reverse()); // Reverse to show recent orders first
+        setOrderData(allOrdersItem.reverse());
       } else {
         console.log('No orders found');
       }
 
     } catch (error) {
       console.error('Error loading orders:', error);
+    } finally {
+      setLoading(false);
+      setTrackingIdx(null);
     }
   };
 
@@ -58,7 +68,15 @@ const Orders = () => {
         <Title text1={'MY'} text2={'ORDERS'} />
       </div>
       <div>
-        {orderData.length > 0 ? (
+        {loading ? (
+          <div className='flex items-center justify-center py-16 gap-3 text-gray-500'>
+            <svg className="animate-spin h-6 w-6 text-gray-700" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+            </svg>
+            <span className='text-sm sm:text-base'>Loading your orders...</span>
+          </div>
+        ) : orderData.length > 0 ? (
           orderData.map((item, index) => (
             <div key={index} className='py-4 border-t-[0.2px] border-b-[0.2px] border-gray-300 text-gray-900 flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
               <div className='flex items-start gap-6 text-sm'>
@@ -79,7 +97,23 @@ const Orders = () => {
                   <p className='min-w-2 h-2 rounded-full bg-green-600'></p>
                   <p className='text-sm md:text-base'>{item.status}</p>
                 </div>
-                <button className='border px-4 py-2 text-sm font-medium rounded-sm' onClick={loadOrderData}>Track Order</button>
+                <button 
+                  disabled={trackingIdx === index}
+                  className='border px-4 py-2 text-sm font-medium rounded-sm flex items-center gap-1.5 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition' 
+                  onClick={() => loadOrderData(index)}
+                >
+                  {trackingIdx === index ? (
+                    <>
+                      <svg className="animate-spin h-3.5 w-3.5 text-gray-700" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                      </svg>
+                      <span>Tracking...</span>
+                    </>
+                  ) : (
+                    'Track Order'
+                  )}
+                </button>
               </div>
             </div>
           ))
@@ -89,6 +123,6 @@ const Orders = () => {
       </div>
     </div>
   );
-}
+};
 
 export default Orders;

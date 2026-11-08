@@ -11,6 +11,7 @@ const Product = () => {
   const [productData, setProductData] = useState(false);
   const [image, setImage] = useState('');
   const [size, setSize] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
 
   const fetchProductData = async () => {
     products.map((item) => {
@@ -20,6 +21,15 @@ const Product = () => {
         return null;
       }
     });
+  };
+
+  const handleAddToCart = async () => {
+    setIsAdding(true);
+    try {
+      await addToCart(productData._id, size);
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   useEffect(() => {
@@ -81,10 +91,21 @@ const Product = () => {
             </div>
           </div>
           <button
-            onClick={() => addToCart(productData._id, size)}
-            className="bg-black text-white px-6 py-2 lg:px-8 lg:py-3 text-sm active:bg-gray-700 font-semibold rounded-md"
+            onClick={handleAddToCart}
+            disabled={isAdding}
+            className="bg-black text-white px-6 py-2.5 lg:px-8 lg:py-3 text-sm active:bg-gray-700 font-semibold rounded-md flex items-center justify-center gap-2 hover:bg-gray-900 disabled:bg-gray-500 disabled:cursor-not-allowed transition"
           >
-            ADD TO CART
+            {isAdding ? (
+              <>
+                <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+                <span>ADDING...</span>
+              </>
+            ) : (
+              'ADD TO CART'
+            )}
           </button>
           <hr className="mt-8 bg-gray-700 lg:w-4/5" />
           <div className="text-sm text-gray-500 mt-5 flex flex-col gap-1">
@@ -117,4 +138,3 @@ const Product = () => {
 };
 
 export default Product;
-
