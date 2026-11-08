@@ -103,14 +103,17 @@ export function toHonoHandler(...middlewares) {
     }
 
     // 2. Ensure serverless MongoDB connection
-    try {
-      await connectDB({ env: c.env });
-    } catch (dbErr) {
-      console.error("Worker DB connect error:", dbErr.message);
-      return c.json(
-        { success: false, message: "Database connection failed", error: dbErr.message },
-        500
-      );
+    const mongoUri = (c.env && c.env.MONGODB_URI) || (typeof process !== "undefined" && process.env.MONGODB_URI);
+    if (mongoUri) {
+      try {
+        await connectDB({ env: c.env });
+      } catch (dbErr) {
+        console.error("Worker DB connect error:", dbErr.message);
+        return c.json(
+          { success: false, message: "Database connection failed", error: dbErr.message },
+          500
+        );
+      }
     }
 
     // 3. Parse Request Body & Multipart Files
@@ -278,7 +281,8 @@ app.post("/api/product/single", toHonoHandler(singleProduct));
 
 // Display Product Route (/api/displayproduct)
 app.get("/api/displayproduct", async (c) => {
-  await connectDB({ env: c.env });
+  const mongoUri = (c.env && c.env.MONGODB_URI) || (typeof process !== "undefined" && process.env.MONGODB_URI);
+  if (mongoUri) await connectDB({ env: c.env });
   try {
     const products = await SellProduct.find({});
     return c.json(products, 200);
@@ -308,7 +312,8 @@ app.post("/api/add-item-website/:id", toHonoHandler(addItemToWebsite));
 
 // Review Routes (/api/product/:id/reviews)
 app.post("/api/product/:id/reviews", async (c) => {
-  await connectDB({ env: c.env });
+  const mongoUri = (c.env && c.env.MONGODB_URI) || (typeof process !== "undefined" && process.env.MONGODB_URI);
+  if (mongoUri) await connectDB({ env: c.env });
   const productId = c.req.param("id");
   try {
     const body = await c.req.json();
@@ -322,7 +327,8 @@ app.post("/api/product/:id/reviews", async (c) => {
 });
 
 app.get("/api/product/:id/reviews", async (c) => {
-  await connectDB({ env: c.env });
+  const mongoUri = (c.env && c.env.MONGODB_URI) || (typeof process !== "undefined" && process.env.MONGODB_URI);
+  if (mongoUri) await connectDB({ env: c.env });
   const productId = c.req.param("id");
   try {
     const reviews = await Review.find({ productId });
