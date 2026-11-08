@@ -12,6 +12,6 @@ const sellProductSchema=new mongoose.Schema({
     date:{type:Number, required:true}
 })
 
-const sellProductModel= mongoose.models.sellProducts ||  mongoose.model("sellProduct",sellProductSchema);
+const sellProductModel = (mongoose.models && mongoose.models.sellProducts) || mongoose.model("sellProduct", sellProductSchema);
 
 export default sellProductModel;

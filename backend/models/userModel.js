@@ -13,7 +13,6 @@ const userSchema = new mongoose.Schema({
     role: { type: String, default: 'user' }
 }, { minimize: false });
 
-const userModel = mongoose.models.User || mongoose.model('User', userSchema);
+const userModel = (mongoose.models && mongoose.models.User) || mongoose.model('User', userSchema);
 
 export default userModel;
-

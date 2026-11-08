@@ -5,6 +5,9 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
+  "alias": {
+    "mongoose": "./mongoose-edge.cjs"
+  },
   "vars": {
     "NODE_ENV": "production"
   }

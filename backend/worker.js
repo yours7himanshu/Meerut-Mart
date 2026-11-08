@@ -336,7 +336,7 @@ app.get("/api/product/:id/reviews", async (c) => {
 app.post("/send-email", async (c) => {
   try {
     const { emails, message } = await c.req.json();
-    await sendEmail(emails, message);
+    await sendEmail(emails, message, { env: c.env });
     return c.json({ message: "Emails sent successfully" }, 200);
   } catch (error) {
     console.error("Error sending email:", error);
